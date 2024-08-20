@@ -11,6 +11,12 @@ To install and use this API, follow these steps:
 3. Install the dependencies: `npm i`
 4. Start the server: `npm start`
 
+### More
+
+1. Build run `npm run build`
+2. Test: run `npm run test`
+3. Lint, run `npm run lint`
+
 ## Usage
 
 Once the server is running, you can send HTTP requests to the API endpoints to perform image processing operations. Here are some examples:
