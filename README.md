@@ -24,12 +24,7 @@ Once the server is running, you can send HTTP requests to the API endpoints to p
 ### Resize an image
 
 ```js
-POST /api/images
-{
-    "filename": "image-name.jpg",
-    "width": 800,
-    "height": 600
-}
+POST /api/images?filename=img-name.jpg&width=200&height=200
 ```
 
 ## Contributing
