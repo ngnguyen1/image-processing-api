@@ -7,8 +7,11 @@ var express_1 = __importDefault(require("express"));
 var routes_1 = __importDefault(require("./routes"));
 var app = (0, express_1.default)();
 var port = 3000;
-app.get('/', function (req, res) {
-    res.send('Hello, World!');
+app.get('/_healthcheck', function (req, res) {
+    res.status(200).send({
+        product: 'image-processing-api',
+        env: 'dev',
+    });
 });
 app.use('/api', routes_1.default);
 app.listen(port, function () {

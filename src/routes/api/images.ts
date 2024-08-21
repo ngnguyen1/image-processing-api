@@ -1,15 +1,21 @@
 import express, { Router, Request, Response } from 'express'
 import fs from 'fs'
+import path from 'path'
 import sharp from 'sharp'
 
 // Create a new router instance
 const router: Router = express.Router()
 
-function getCachedImg(filename: string, width: number, height: number): string {
-  return `${process.cwd()}/assets/thumb/${filename}_${width}_${height}.jpg`
+export function getCachedImg(
+  filename: string,
+  width: number,
+  height: number
+): string {
+  const fileWithoutExtension = path.basename(filename, path.extname(filename))
+  return `${process.cwd()}/assets/thumb/${fileWithoutExtension}_${width}_${height}.jpg`
 }
 
-async function getImageBuffer(filename: string): Promise<Buffer> {
+export async function getImageBuffer(filename: string): Promise<Buffer> {
   const image = sharp(`${process.cwd()}/assets/full/${filename}`)
   return await image.toBuffer()
 }
@@ -25,6 +31,7 @@ router.get('/', async (req: Request, res: Response) => {
   // Check if the cached image file exists
   if (fs.existsSync(cachedImg)) {
     // Handle the case when the cached image file does not exist
+    res.set('Content-Type', 'image/jpg')
     return res.sendFile(cachedImg)
   }
 

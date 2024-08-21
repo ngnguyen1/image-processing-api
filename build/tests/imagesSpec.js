@@ -41,9 +41,54 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 /* eslint-disable no-undef */
 var supertest_1 = __importDefault(require("supertest"));
+var fs_1 = __importDefault(require("fs"));
+var path_1 = __importDefault(require("path"));
 var main_1 = __importDefault(require("../main"));
+var images_1 = require("../routes/api/images");
+describe('GET /_healthcheck', function () {
+    it('should return 200', function () { return __awaiter(void 0, void 0, void 0, function () {
+        var response;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, (0, supertest_1.default)(main_1.default).get('/_healthcheck')];
+                case 1:
+                    response = _a.sent();
+                    expect(response.status).toBe(200);
+                    expect(response.body).toEqual({
+                        product: 'image-processing-api',
+                        env: 'dev',
+                    });
+                    return [2 /*return*/];
+            }
+        });
+    }); });
+});
+describe('util functions', function () {
+    it('getCachedImg() should return correct path', function () {
+        var filename = 'fjord.jpg';
+        var width = 200;
+        var height = 200;
+        var thumbFileName = "".concat(path_1.default.basename(filename, path_1.default.extname(filename)), "_").concat(width, "_").concat(height, ".jpg");
+        var thumbPath = "".concat(process.cwd(), "/assets/thumb/").concat(thumbFileName);
+        expect((0, images_1.getCachedImg)(filename, width, height)).toBe(thumbPath);
+    });
+    it('getImageBuffer() should return buffer', function () { return __awaiter(void 0, void 0, void 0, function () {
+        var filename, imageBuffer;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    filename = 'fjord.jpg';
+                    return [4 /*yield*/, (0, images_1.getImageBuffer)(filename)];
+                case 1:
+                    imageBuffer = _a.sent();
+                    expect(Buffer.isBuffer(imageBuffer)).toBe(true);
+                    return [2 /*return*/];
+            }
+        });
+    }); });
+});
 describe('GET /images', function () {
-    it('should return 400 if missing any params', function () { return __awaiter(void 0, void 0, void 0, function () {
+    it('should return 400 if missing width and heigh params', function () { return __awaiter(void 0, void 0, void 0, function () {
         var response;
         return __generator(this, function (_a) {
             switch (_a.label) {
@@ -60,7 +105,41 @@ describe('GET /images', function () {
             }
         });
     }); });
-    it('should return 400 if missing params', function () { return __awaiter(void 0, void 0, void 0, function () {
+    it('should return 400 if width parameter is invalid', function () { return __awaiter(void 0, void 0, void 0, function () {
+        var response;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, (0, supertest_1.default)(main_1.default)
+                        .get('/api/images')
+                        .query({ width: 'invalid', height: 200, filename: 'fjord.jpg' })];
+                case 1:
+                    response = _a.sent();
+                    expect(response.status).toBe(400);
+                    expect(response.body).toEqual({
+                        error: 'Invalid parameter: width must be a number',
+                    });
+                    return [2 /*return*/];
+            }
+        });
+    }); });
+    it('should return 400 if height parameter is invalid', function () { return __awaiter(void 0, void 0, void 0, function () {
+        var response;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, (0, supertest_1.default)(main_1.default)
+                        .get('/api/images')
+                        .query({ width: 200, height: 'invalid', filename: 'fjord.jpg' })];
+                case 1:
+                    response = _a.sent();
+                    expect(response.status).toBe(400);
+                    expect(response.body).toEqual({
+                        error: 'Invalid parameter: height must be a number',
+                    });
+                    return [2 /*return*/];
+            }
+        });
+    }); });
+    it('should return 400 if missing filename params', function () { return __awaiter(void 0, void 0, void 0, function () {
         var response;
         return __generator(this, function (_a) {
             switch (_a.label) {
@@ -94,17 +173,29 @@ describe('GET /images', function () {
             }
         });
     }); });
-    it('should return 200', function () { return __awaiter(void 0, void 0, void 0, function () {
-        var response;
+    it('should return 200 with new image', function () { return __awaiter(void 0, void 0, void 0, function () {
+        var filename, width, height, thumbFileName, thumbPath, response;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, (0, supertest_1.default)(main_1.default)
-                        .get('/api/images')
-                        .query({ width: 200, height: 200, filename: 'fjord.jpg' })];
+                case 0:
+                    filename = 'fjord.jpg';
+                    width = 200;
+                    height = 300;
+                    thumbFileName = "".concat(path_1.default.basename(filename, path_1.default.extname(filename)), "_").concat(width, "_").concat(height, ".jpg");
+                    thumbPath = "".concat(process.cwd(), "/assets/thumb/").concat(thumbFileName);
+                    if (fs_1.default.existsSync(thumbPath)) {
+                        // remove cached file if exist
+                        fs_1.default.unlinkSync(thumbPath);
+                    }
+                    return [4 /*yield*/, (0, supertest_1.default)(main_1.default)
+                            .get('/api/images')
+                            .query({ width: width, height: height, filename: filename })];
                 case 1:
                     response = _a.sent();
                     expect(response.status).toBe(200);
-                    expect(response.header['content-type']).toBe('image/jpeg');
+                    expect(response.header['content-type']).toBe('image/jpg');
+                    // expect file is exist in thumb folder
+                    expect(fs_1.default.existsSync(thumbPath)).toBe(true);
                     return [2 /*return*/];
             }
         });

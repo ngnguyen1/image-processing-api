@@ -21,6 +21,12 @@ To install and use this API, follow these steps:
 
 Once the server is running, you can send HTTP requests to the API endpoints to perform image processing operations. Here are some examples:
 
+### Check service is running
+
+```js
+GET /_healthcheck
+```
+
 ### Resize an image
 
 ```js

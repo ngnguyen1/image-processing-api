@@ -39,13 +39,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.getCachedImg = getCachedImg;
+exports.getImageBuffer = getImageBuffer;
 var express_1 = __importDefault(require("express"));
 var fs_1 = __importDefault(require("fs"));
+var path_1 = __importDefault(require("path"));
 var sharp_1 = __importDefault(require("sharp"));
 // Create a new router instance
 var router = express_1.default.Router();
 function getCachedImg(filename, width, height) {
-    return "".concat(process.cwd(), "/assets/thumb/").concat(filename, "_").concat(width, "_").concat(height, ".jpg");
+    var fileWithoutExtension = path_1.default.basename(filename, path_1.default.extname(filename));
+    return "".concat(process.cwd(), "/assets/thumb/").concat(fileWithoutExtension, "_").concat(width, "_").concat(height, ".jpg");
 }
 function getImageBuffer(filename) {
     return __awaiter(this, void 0, void 0, function () {
@@ -73,6 +77,7 @@ router.get('/', function (req, res) { return __awaiter(void 0, void 0, void 0, f
                 // Check if the cached image file exists
                 if (fs_1.default.existsSync(cachedImg)) {
                     // Handle the case when the cached image file does not exist
+                    res.set('Content-Type', 'image/jpg');
                     return [2 /*return*/, res.sendFile(cachedImg)];
                 }
                 return [4 /*yield*/, getImageBuffer(filename)];
